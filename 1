@@ -1,0 +1,250 @@
+import java.util.Scanner;
+import java.util.Date;
+
+/*
+This Java code defines a menu-driven program that keeps track of inventory and sales.
+It includes several methods, each of which represents a menu option.
+The first menu option inserts new articles into the inventory.
+The second removes an article from the inventory.
+The third displays a list of articles in the inventory.
+The fourth registers a sale of an article, decreasing its quantity in the inventory.
+The fifth displays the order history, and the sixth sorts and displays the sorted history table.
+The program uses a two-dimensional array to store the items and sales data, along with a Date array to store the date of each sale.
+The program keeps running until the user chooses to quit by entering 'q'.
+
+ */
+
+public class Main {
+    private static Scanner scanner = new Scanner(System.in);
+    static final int NUM_OF_ARTICLES = 10;
+
+    static final int NUM_OF_SALES = 1000;
+    static int itemNumber = 1000;
+    static int totalNoOfArticles = 0;
+    static int[][] items = new int[NUM_OF_ARTICLES][3];
+    static int[][] sales = new int[NUM_OF_SALES][3];
+    static Date[] date = new Date[NUM_OF_SALES];
+
+    public static void main(String[] args) {
+        while (true) {
+            menu();
+        }
+
+    }
+
+    //Menu to allow the user to input/remove articles and register sales.
+    public static int menu() {
+        int input;
+
+        System.out.println("1. Insert articles");
+        System.out.println("2. Remove an article");
+        System.out.println("3. Display a list of articles");
+        System.out.println("4. Register a sale");
+        System.out.println("5. Display order history");
+        System.out.println("6. Sort and display order history table");
+        System.out.println("q. Quit");
+        System.out.print("Ditt val: ");
+        input = input();
+
+
+        switch (input) {
+            case 0:
+                break;
+            case 1:
+                System.out.println("Insert number of articles: ");
+                int numArticles = input();
+                items = checkFull(items, numArticles);
+                items = insertArticles(items, itemNumber, numArticles);
+                break;
+            case 2:
+                removeArticle(items);
+                break;
+            case 3:
+                printArticles(items);
+                break;
+            case 4:
+                sellArticle(sales, date, items);
+                break;
+            case 5:
+                printSales(sales, date);
+                break;
+            case 6:
+                sortedTable(sales,date);
+                break;
+            default:
+                break;
+
+        }
+        return 0;
+    }
+
+    //Method that takes user input and checks if the input is valid and logical.
+    public static int input() {
+
+        while (scanner.hasNext()) {
+            if (scanner.hasNextInt()) {
+                int input = scanner.nextInt();
+                if (input > 0) {
+                    return input;
+                } else {
+                    System.out.println("Invalid entry, please enter valid input");
+                }
+            } else {
+                String temp = scanner.next();
+                if (temp.equals("q")) {
+                    System.exit(0);
+                } else {
+                    System.out.println("Invalid entry, please enter valid input");
+                }
+            }
+        }
+        return 0;
+    }
+
+    //checks if the article array is full. creates a new array with added space depending on how many articles are being inserted.
+    public static int[][] checkFull(int[][] articles, int noOfArticles) {
+        int count = 0;
+
+        for (int i = 0; i < articles.length; i++) {
+            if (articles[i][0] == 0 && articles[i][1] == 0 && articles[i][2] == 0) {
+                count++;
+            }
+        }
+        if (count > noOfArticles) {
+            return articles;
+        } else {
+            int[][] articlesBigger = new int[articles.length + noOfArticles - count][3];
+//            System.out.println(articles.length);
+
+            for (int i = 0; i < articles.length; i++) {
+                for (int j = 0; j < 3; j++) {
+                    articlesBigger[i][j] = articles[i][j];
+                }
+            }
+            return articlesBigger;
+
+        }
+    }
+
+    //Inserts articles into the articles array. Uses method Checkfull to check whether the article array needs to be expanded.
+    public static int[][] insertArticles(int[][] articles, int articleNumber, int noOfArticles) {
+        totalNoOfArticles += noOfArticles;
+
+        for (int i = 0; i < totalNoOfArticles; i++) {
+            if (articles[i][0] == 0) {
+                articles[i][0] = articleNumber;
+                itemNumber = ++articleNumber;
+                System.out.printf("Insert quantity of item/slot %d: ", i + 1);
+                articles[i][1] = input();
+                System.out.printf("Insert price of item/slot %d: ", i + 1);
+                articles[i][2] = input();
+            }
+        }
+        return articles;
+    }
+
+    //Removes articles from articles array
+    public static void removeArticle(int[][] articles) {
+        System.out.println("Which article would you like to remove?");
+        printArticles(items);
+        int temp = input() - 1;
+        if (temp <= items.length){
+            articles[temp][0] = 0;
+            articles[temp][1] = 0;
+            articles[temp][2] = 0;
+            totalNoOfArticles -= 1;
+        } else {
+            System.out.println("Enter the number (not article number)");
+        }
+    }
+
+    //Prints article array.
+    public static void printArticles(int[][] articles) {
+        System.out.printf("%15s %15s %15s %15s %n", "No.", "Article Number", "Quantity", "Price");
+        for (int i = 0; i < articles.length; i++) {
+            if (articles[i][0] != 0) {
+                System.out.printf("%15d %15d %15d %15d %n", i + 1, articles[i][0], articles[i][1], articles[i][2]);
+            }
+        }
+    }
+
+    //prompts the user to insert which article that has been sold. Asks for quantity and price. Adds info to sales array.
+    public static void sellArticle(int[][] sales, Date[] salesDate, int[][] articles) {
+        System.out.println("Which article did you sell?");
+        printArticles(articles);
+        int numberArticle = input();
+        System.out.println("Quantity?");
+        int amountToSell = input();
+        if (articles[numberArticle - 1][1] < amountToSell) {
+            System.out.println("There is not enough quantity to make that sell");
+            return;
+        } else {
+            articles[numberArticle - 1][1] -= amountToSell;
+        }
+
+        System.out.println("Sellprice?");
+        int sellPrice = input();
+
+        for (int i = 0; i < sales.length; i++) {
+            if (sales[i][0] == 0) {
+                sales[i][0] = articles[numberArticle - 1][0];
+                sales[i][1] = amountToSell;
+                sales[i][2] = sellPrice;
+                break;
+            }
+        }
+
+        for (int i = 0 ;i<salesDate.length;i++) {
+            if (salesDate[i] == null) {
+                Date dateTemp = new Date();
+                salesDate[i] = dateTemp;
+                break;
+            }
+        }
+
+    }
+
+    //Prints sales array.
+    public static void printSales(int[][] sales, Date[] salesDate) {
+        System.out.printf("%15s %15s %15s %15s %35s %n", "No.", "Article Number", "Quantity", "Price", "Date & Time");
+        for (int i = 0; i < sales.length; i++) {
+            if (sales[i][0] != 0) {
+                System.out.printf("%15d %15d %15d %15d %35tc %n", i + 1, sales[i][0], sales[i][1], sales[i][2], salesDate[i]);
+            }
+        }
+    }
+
+    //Prints sales array in article number order. creates temporary array to hold the sorted information. The information is lost once printed.
+    public static void sortedTable(int[][] sales, Date[] salesDate) {
+        int[][] tempSales = new int[sales.length][3];
+        System.arraycopy(sales, 0, tempSales, 0, sales.length);
+        Date[] tempDate;
+        tempDate = new Date[salesDate.length];
+        System.arraycopy(salesDate, 0, tempDate, 0, sales.length);
+
+        for (int i = 0; i < tempSales.length - 1; i++) {
+            for (int j = i + 1; j < tempSales.length; j++) {
+                if (tempSales[i][0] > tempSales[j][0]) {
+                    int[] temp = tempSales[i];
+                    tempSales[i] = tempSales[j];
+                    tempSales[j] = temp;
+
+                    Date tempTwo = tempDate [i];
+                    tempDate[i] = tempDate[j];
+                    tempDate[j] = tempTwo;
+                }
+            }
+        }
+
+
+
+        System.out.printf("%15s %15s %15s %15s %35s %n", "No.", "Article Number", "Quantity", "Price", "Date & Time");
+        int countNo = 1;
+        for (int i = 0; i < sales.length; i++) {
+            if (tempSales[i][0] != 0) {
+                System.out.printf("%15d %15d %15d %15d %35tc %n", countNo, tempSales[i][0], tempSales[i][1], tempSales[i][2], tempDate[i]);
+                countNo++;
+            }
+        }
+    }
+}
